@@ -75,35 +75,37 @@ const (
 	PlatformCloudflare = "CF-Connecting-IP"
 )
 
-// Engine is the framework's instance, it contains the muxer, middleware and configuration settings.
-// Create an instance of Engine, by using New() or Default()
+// Engine is the framework's instance. It contains the muxer, middleware and configuration settings.
+// Create an instance of Engine by using New() or Default()
 type Engine struct {
 	RouterGroup
 
 	// RedirectTrailingSlash enables automatic redirection if the current route can't be matched but a
-	// handler for the path with (without) the trailing slash exists.
-	// For example if /foo/ is requested but a route only exists for /foo, the
-	// client is redirected to /foo with http status code 301 for GET requests
-	// and 307 for all other request methods.
+	// handler for a path that is the same but which either has or does not have a trailing slash,
+	// whichever is the opposite of the current path. For example if /foo/ is requested but a route
+	// only exists for /foo, the client is redirected to /foo.
+	//
+	// The status code for the redirect is 301 Moved Permanently when sent in response to a GET
+	// request and 307 Temporary Redirect in response to all other requests.
 	RedirectTrailingSlash bool
 
-	// RedirectFixedPath if enabled, the router tries to fix the current request path, if no
-	// handle is registered for it.
-	// First superfluous path elements like ../ or // are removed.
-	// Afterwards the router does a case-insensitive lookup of the cleaned path.
-	// If a handle can be found for this route, the router makes a redirection
-	// to the corrected path with status code 301 for GET requests and 307 for
-	// all other request methods.
+	// RedirectFixedPath, if enabled, causes the router to try to fix the current request path if no
+	// handler is registered for it. This is done by first removing superfluous path elements like ../
+	// or // and then performing a case-insensitive lookup of the cleaned path. If a handle can be
+	// found for this route, the router redirects to the corrected path via status code 301 Moved
+	// Permanently in response to GET requests and status code 307 Temporary Redirect in response all
+	// other request methods.
+	//
 	// For example /FOO and /..//Foo could be redirected to /foo.
+	//
 	// RedirectTrailingSlash is independent of this option.
 	RedirectFixedPath bool
 
-	// HandleMethodNotAllowed if enabled, the router checks if another method is allowed for the
-	// current route, if the current request can not be routed.
-	// If this is the case, the request is answered with 'Method Not Allowed'
-	// and HTTP status code 405.
-	// If no other Method is allowed, the request is delegated to the NotFound
-	// handler.
+	// HandleMethodNotAllowed, if enabled, causes the router to check if another method is allowed for
+	// the current route if the requested method is not registered with the router. If such a route is
+	// found, the request is answered with 'Method Not Allowed' and HTTP status code 405.
+	//
+	// If no other Method is allowed, the request is delegated to the NotFound handler.
 	HandleMethodNotAllowed bool
 
 	// ForwardedByClientIP if enabled, client IP will be parsed from the request's headers that
